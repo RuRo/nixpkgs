@@ -78,6 +78,7 @@ wrapPythonProgramsIn() {
                     if [ -z "$permitUserSite" ]; then
                         wrap_args+=(--set PYTHONNOUSERSITE "true")
                     fi
+		    wrap_args+=(--inherit-argv0)
 
                     # Add any additional arguments provided by makeWrapperArgs
                     # argument to buildPythonPackage.

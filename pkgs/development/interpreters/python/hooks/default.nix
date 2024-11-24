@@ -238,7 +238,7 @@ in {
     } ./wheel-unpack-hook.sh) {};
 
   wrapPython = callPackage ../wrap-python.nix {
-    inherit (pkgs.buildPackages) makeWrapper;
+    makeWrapper = pkgs.buildPackages.makeBinaryWrapper;
   };
 
   sphinxHook = callPackage ({ makePythonHook, installShellFiles }:
