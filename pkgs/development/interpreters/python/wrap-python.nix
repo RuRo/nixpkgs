@@ -36,12 +36,10 @@ makePythonHook {
           import site
           import functools
           import os
-          print('"'argv0: '"' + sys.orig_argv[0] + '"' target: '"' + '"'$f'"' + '"' verdict: '"', end="")
-          _nix_wrapped = '"'$f'"'.split('"'/'"')
-          _nix_direct = os.path.realpath(sys.orig_argv[0]) == '"'/'"'.join([*_nix_wrapped[:-1], '"'''"'.join(['"'.'"', _nix_wrapped[-1], '"'-wrapped'"']) ]) or os.path.realpath(sys.argv[0]) == '"'$f'"'
-          sys.orig_argv[0] = '"'$(readlink -f "$f")'"' if _nix_direct else sys.argv[0]
+          _nix_direct = os.getenv("NIX_PYTHON_IN_ENV", None) != "true"
+          sys.argv[0] = '"'$(readlink -f "$f")'"' if _nix_direct else sys.argv[0]
           functools.reduce(lambda k, p: site.addsitedir(p, k), ['"$([ -n "$program_PYTHONPATH" ] && (echo "'$program_PYTHONPATH'" | sed "s|:|','|g") || true)"'], site._init_pathinfo()) if _nix_direct else None
-          print(str(_nix_direct))
+          os.environ.pop('NIX_PYTHON_IN_ENV') if not _nix_direct else None
         '';
 
       in ''
