@@ -43,9 +43,9 @@ let
               rm -f "$out/bin/$prg"
               if [ -x "$prg" ]; then
                 if [ -f ".$prg-wrapped" ] && ( cat ".$prg-wrapped" | head -n 1 | grep -q "python" ) ; then
-                  echo "#!${pythonExecutable}" > "$out/bin/$prg"
-                  echo "import os" > "$out/bin/$prg"
-                  echo 'os.environ["NIX_PYTHON_IN_ENV"] = "true"' > "$out/bin/$prg"
+                  echo "#!${pythonExecutable}" >> "$out/bin/$prg"
+                  echo "import os" >> "$out/bin/$prg"
+                  echo 'os.environ["NIX_PYTHON_IN_ENV"] = "true"' >> "$out/bin/$prg"
                   cat ".$prg-wrapped" >> "$out/bin/$prg"
                   chmod +x "$out/bin/$prg"
                 else
