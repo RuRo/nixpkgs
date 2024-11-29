@@ -39,7 +39,7 @@ makePythonHook {
           _nix_direct = os.getenv("NIX_PYTHON_IN_ENV", None) != "true"
           sys.argv[0] = '"'$(readlink -f "$f")'"' if _nix_direct else sys.argv[0]
           functools.reduce(lambda k, p: site.addsitedir(p, k), ['"$([ -n "$program_PYTHONPATH" ] && (echo "'$program_PYTHONPATH'" | sed "s|:|','|g") || true)"'], site._init_pathinfo()) if _nix_direct else None
-          os.environ.pop('NIX_PYTHON_IN_ENV') if not _nix_direct else None
+          os.environ.pop("NIX_PYTHON_IN_ENV") if not _nix_direct else None
         '';
 
       in ''
