@@ -128,7 +128,7 @@ let
         grad-cam = linux;
         jaxlib = linux;
         jax = linux;
-        Keras = linux;
+        keras = linux;
         kornia = linux;
         mmcv = linux;
         mxnet = linux;
