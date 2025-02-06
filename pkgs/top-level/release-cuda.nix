@@ -150,7 +150,6 @@ let
         tensorflow = linux;
         tensorflow-probability = linux;
         tesserocr = linux;
-        Theano = linux;
         tiny-cuda-nn = linux;
         torchaudio = linux;
         torch = linux;
