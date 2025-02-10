@@ -2,15 +2,32 @@
   autoAddDriverRunpath,
   backendStdenv,
   cmake,
-  cudatoolkit,
   cudaVersion,
   fetchFromGitHub,
   fetchpatch,
-  freeimage,
-  glfw3,
   hash,
   lib,
   pkg-config,
+  symlinkJoin,
+
+  # CUDA dependencies
+  cuda_cccl,
+  cuda_cudart,
+  cuda_nvcc,
+  cuda_nvrtc,
+  cuda_profiler_api,
+  libcublas,
+  libcufft,
+  libcurand,
+  libcusolver,
+  libcusparse,
+  libnpp,
+  libnvjitlink,
+  libnvjpeg,
+
+  # Normal dependencies
+  freeimage,
+  glfw3,
 }:
 let
   inherit (lib) optionals versionAtLeast versionOlder;
@@ -43,11 +60,31 @@ backendStdenv.mkDerivation (finalAttrs: {
 
   dontUseCmakeConfigure = true;
 
-  buildInputs = [
-    cudatoolkit
-    freeimage
-    glfw3
-  ];
+  buildInputs =
+    [
+      freeimage
+      glfw3
+
+      # CUDA dependencies
+      cuda_cccl
+      cuda_cudart
+      cuda_nvcc
+      cuda_nvrtc
+      cuda_profiler_api
+      libcublas
+      libcufft
+      libcurand
+      libcusolver
+      libcusparse
+      libnpp
+      libnvjitlink
+      libnvjpeg
+      cuda_cudart.static
+      libcublas.static
+      libcufft.static
+      libcurand.static
+      libcusparse.static
+    ];
 
   # See https://github.com/NVIDIA/cuda-samples/issues/75.
   patches = optionals (finalAttrs.version == "11.3") [
@@ -59,9 +96,24 @@ backendStdenv.mkDerivation (finalAttrs: {
 
   enableParallelBuilding = true;
 
-  preConfigure = ''
-    export CUDA_PATH=${cudatoolkit}
-  '';
+  # Set some environment variables to help the poorly written
+  # Makefiles find the libraries, headers, etc.
+  preConfigure =
+    let
+      paths = finalAttrs.buildInputs;
+      devPaths = map lib.getDev paths;
+      libPaths = map lib.getLib paths;
+      buildInputsRoot = symlinkJoin {
+        name = "build-inputs-root";
+        paths = paths ++ devPaths ++ libPaths;
+      };
+    in
+    ''
+      export CUDA_PATH=${buildInputsRoot}
+      export CUDALIB=${buildInputsRoot}/lib/stubs/libcuda.so
+      export DFLT_PATH=${buildInputsRoot}/lib
+      export HEADER_SEARCH_PATH=${buildInputsRoot}/include
+    '';
 
   installPhase = ''
     runHook preInstall
