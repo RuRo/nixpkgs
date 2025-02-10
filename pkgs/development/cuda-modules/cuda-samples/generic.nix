@@ -224,10 +224,24 @@ backendStdenv.mkDerivation (finalAttrs: {
       export HEADER_SEARCH_PATH=${buildInputsRoot}/include
     '';
 
+  # Any files that were in the release directory before the build started
+  # are non-executable data files (raw data, images, helper scripts and
+  # expected sample outputs). Move them to ./data in advance to make it
+  # easier to distinguish data and executables during the install step.
+  preBuild = ''
+    mkdir -p ${releasePath}
+    mv ${releasePath} data
+    mkdir -p ${releasePath}
+  '';
+
   installPhase = ''
     runHook preInstall
 
-    install -Dm755 -t $out/bin ${releasePath}/*
+    # Install the data files (if any)
+    (cd data; find -type f -exec install -vDm 644 {} $out/data/{} \;)
+
+    # Install the compiled executable binaries
+    (cd ${releasePath}; find -type f -exec  install -vDm 755 {} $out/bin/{} \;)
 
     runHook postInstall
   '';
