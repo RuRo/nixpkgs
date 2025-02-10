@@ -11,7 +11,7 @@
   symlinkJoin,
 
   # CUDA dependencies
-  cuda_cccl,
+  cuda_cccl ? null,
   cuda_cudart,
   cuda_nvcc,
   cuda_nvrtc,
@@ -66,7 +66,6 @@ backendStdenv.mkDerivation (finalAttrs: {
       glfw3
 
       # CUDA dependencies
-      cuda_cccl
       cuda_cudart
       cuda_nvcc
       cuda_nvrtc
@@ -84,6 +83,9 @@ backendStdenv.mkDerivation (finalAttrs: {
       libcufft.static
       libcurand.static
       libcusparse.static
+    ]
+    ++ optionals (versionAtLeast finalAttrs.version "11.4") [
+      cuda_cccl
     ];
 
   # See https://github.com/NVIDIA/cuda-samples/issues/75.
