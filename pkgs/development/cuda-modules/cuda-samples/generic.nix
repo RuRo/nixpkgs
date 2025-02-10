@@ -30,6 +30,14 @@
   pkg-config,
   util-linux,
   which,
+
+  # Graphical dependencies
+  libGL,
+  libGLU,
+  libglut,
+  vulkan-headers,
+  vulkan-loader,
+  xorg,
 }:
 let
   inherit (lib)
@@ -77,6 +85,14 @@ backendStdenv.mkDerivation (finalAttrs: {
     [
       freeimage
       glfw3
+
+      # Graphical dependencies
+      libGL
+      libGLU
+      libglut
+      vulkan-headers
+      vulkan-loader
+      xorg.libX11
 
       # CUDA dependencies
       cuda_cccl
