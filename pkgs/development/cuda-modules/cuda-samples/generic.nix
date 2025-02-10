@@ -135,7 +135,31 @@ backendStdenv.mkDerivation (finalAttrs: {
 
   postPatch =
     let
-      brokenSamples = [ ];
+      brokenSamples =
+        optionals (backendStdenv.hostPlatform.system == "x86_64-linux") [
+          # The following samples require DriveOS-specific libraries like
+          # NvSciBuf and NvSciSync that are not available on linux
+          "cudaNvSci" # libnvscibuf.so not found, please install libnvscibuf.so
+          "cudaNvSciNvMedia" # cudaNvSciNvMedia is not supported on Linux x86_64
+
+          # The following samples require the cuDLA library,
+          # which is only available on aarch64-jetson
+          "cuDLAErrorReporting" # cuDLAErrorReporting is not supported on Linux x86_64
+          "cuDLALayerwiseStatsHybrid" # cuDLALayerwiseStatsHybrid is not supported on Linux x86_64
+          "cuDLALayerwiseStatsStandalone" # cuDLAErrorReporting is not supported on Linux x86_64
+          "cuDLAStandaloneMode" # cuDLAStandaloneMode is not supported on Linux x86_64
+        ]
+        ++ optionals (finalAttrs.version == "12.1") [
+          # The include/cuda/std/barrier header provided by cuda_cccl.dev seems
+          # to be incompatible with newer versions of GCC according to this post
+          # https://forums.developer.nvidia.com/t/cuda-12-1-error-when-building-cuda-samples/246465
+          "simpleAWBarrier" # function "operator new" cannot be called with the given argument list
+        ]
+        ++ optionals (versionOlder finalAttrs.version "11.8") [
+          # cuda_profiler_api is required for the following samples
+          # but cuda_profiler_api is only available since CUDA 11.8
+          "volumeRender" # cuda_profiler_api.h: No such file or directory
+        ];
       missingLibs = [
         # For some reason, these samples (and only these samples)
         # fail to pick up the default library path.
