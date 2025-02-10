@@ -238,6 +238,7 @@ backendStdenv.mkDerivation (finalAttrs: {
           "matrixMul" # cuda_profiler_api.h: No such file or directory
           "volumeRender" # cuda_profiler_api.h: No such file or directory
         ];
+      # TODO: Report upstream? https://github.com/NVIDIA/cuda-samples/issues/264
       missingLibs = [
         # For some reason, these samples (and only these samples)
         # fail to pick up the default library path.
