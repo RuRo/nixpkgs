@@ -137,7 +137,17 @@ backendStdenv.mkDerivation (finalAttrs: {
   postPatch =
     let
       brokenSamples = [ ];
-      missingLibs = [ ];
+      missingLibs = [
+        # For some reason, these samples (and only these samples)
+        # fail to pick up the default library path.
+        "cdpAdvancedQuicksort" # Undefined reference to 'cudaStreamCreateWithFlags'
+        "cdpBezierTessellation" # Undefined reference to 'cudaFree'
+        "cdpQuadtree" # Undefined reference to 'cudaGetParameterBufferV2'
+        "cdpSimplePrint" # Undefined reference to 'cudaGetParameterBufferV2'
+        "cdpSimpleQuicksort" # Undefined reference to 'cudaStreamCreateWithFlags'
+        "conjugateGradientMultiDeviceCG" # Undefined reference to 'cudaCGGetIntrinsicHandle'
+        "simpleCUFFT_callback" # undefined reference to `__cudaRegisterLinkedBinary_*_set_callback_cu_*'
+      ];
 
       ifSampleExists = smp: body: ''
         smp=$(find Samples -type d -name "${smp}")
