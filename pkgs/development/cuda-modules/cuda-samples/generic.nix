@@ -2,6 +2,7 @@
   autoAddDriverRunpath,
   backendStdenv,
   cmake,
+  cuda-samples,
   cudaVersion,
   fetchFromGitHub,
   fetchpatch,
@@ -26,6 +27,7 @@
   libnvjpeg,
 
   # Normal dependencies
+  skipInsecureOutputs ? true,
   freeimage,
   glfw3,
   util-linux,
@@ -37,7 +39,8 @@
   vulkan-headers,
   vulkan-loader,
   xorg,
-}:
+}@inputs:
+
 let
   inherit (lib) optionals versionAtLeast versionOlder;
 
@@ -47,6 +50,52 @@ let
   versionInRange =
     v: lo: hi:
     (versionAtLeast v lo) && (v == hi || versionOlder v hi);
+
+  freeimage = throw "use maybeInsecure.freeimage instead";
+  freeimageWithIgnoredCVEs = inputs.freeimage.overrideAttrs (prev: {
+    meta = prev.meta // {
+      knownVulnerabilities = [ ];
+    };
+  });
+
+  maybeInsecure =
+    if skipInsecureOutputs then
+      {
+        # Since we are skipping the potentially insecure outputs,
+        # we can ignore all of the known vulnerabilities in freeimage.
+        freeimage = freeimageWithIgnoredCVEs;
+        # Make sure that it actually doesn't end up in the outputs.
+        disallowedReferences = [ freeimageWithIgnoredCVEs ];
+        # Warn the user about where to find the missing files.
+        installScript = ''
+          mkdir -p $out
+          cat <<'EOF' >$out/README
+          The cuda-samples package was built with skipInsecureOutputs = true.
+          In this mode, we check that the build succeeds, but don't install the
+          resulting outputs, because they depend on FreeImage which is insecure.
+
+          If you need access to the outputs, use cuda-samples.insecure-outputs
+          instead. You might have to set the NIXPKGS_ALLOW_INSECURE environment
+          variable or the permittedInsecurePackages nixpkgs config setting in
+          order to successfully build it.
+          EOF
+        '';
+      }
+    else
+      {
+        # Use the unmodified freeimage package, so that the user
+        # gets the standard warning about all of the relevant CVEs.
+        inherit (inputs) freeimage;
+        disallowedReferences = [ ];
+        # Actually install stuff
+        installScript = ''
+          # Install the data files (if any)
+          (cd data; find -type f -exec install -vDm 644 {} $out/data/{} \;)
+
+          # Install the compiled executable binaries
+          (cd ${releasePath}; find -type f -exec  install -vDm 755 {} $out/bin/{} \;)
+        '';
+      };
 in
 backendStdenv.mkDerivation (finalAttrs: {
   strictDeps = true;
@@ -76,7 +125,7 @@ backendStdenv.mkDerivation (finalAttrs: {
 
   buildInputs =
     [
-      freeimage
+      (maybeInsecure.freeimage)
       glfw3
 
       # Graphical dependencies
@@ -235,17 +284,16 @@ backendStdenv.mkDerivation (finalAttrs: {
     mkdir -p ${releasePath}
   '';
 
+  inherit (maybeInsecure) disallowedReferences;
   installPhase = ''
     runHook preInstall
-
-    # Install the data files (if any)
-    (cd data; find -type f -exec install -vDm 644 {} $out/data/{} \;)
-
-    # Install the compiled executable binaries
-    (cd ${releasePath}; find -type f -exec  install -vDm 755 {} $out/bin/{} \;)
-
+    ${maybeInsecure.installScript}
     runHook postInstall
   '';
+
+  passthru.insecure-outputs = cuda-samples.override {
+    skipInsecureOutputs = false;
+  };
 
   meta = {
     description = "Samples for CUDA Developers which demonstrates features in CUDA Toolkit";
