@@ -135,6 +135,23 @@ backendStdenv.mkDerivation (finalAttrs: {
 
   postPatch =
     let
+      missingLibs = [ ];
+
+      ifSampleExists = smp: body: ''
+        smp=$(find Samples -type d -name "${smp}")
+        if [ -d "$smp" ]; then
+          ${body}
+        fi
+      '';
+      addLibToSample =
+        smp:
+        ifSampleExists smp ''
+          echo "Adding missing library search path to sample $smp..."
+          sed 's|^\(LIBRARIES +=\)|\1 -L\''${CUDA_PATH}/lib |' \
+            -i $smp/Makefile
+        '';
+      addMissingLibraries = concatMapStrings addLibToSample missingLibs;
+
       # By default, a lot of the Samples are just silently skipped when
       # something goes wrong instead of failing. This code modifies the
       # Makefiles so that they fail instead of "waiving samples".
@@ -144,7 +161,7 @@ backendStdenv.mkDerivation (finalAttrs: {
           -i "{}" \;
       '';
     in
-    dontWaiveSamples;
+    addMissingLibraries + dontWaiveSamples;
 
   # Set some environment variables to help the poorly written
   # Makefiles find the libraries, headers, etc.
