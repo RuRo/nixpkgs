@@ -117,6 +117,19 @@ backendStdenv.mkDerivation (finalAttrs: {
 
   enableParallelBuilding = true;
 
+  postPatch =
+    let
+      # By default, a lot of the Samples are just silently skipped when
+      # something goes wrong instead of failing. This code modifies the
+      # Makefiles so that they fail instead of "waiving samples".
+      dontWaiveSamples = ''
+        find Samples -type f \( -name "Makefile" -o -name "*.mk" \) -exec sed \
+          's|SAMPLE_ENABLED := 0|$(error {}: ERROR, WAIVING NOT ALLOWED)|g' \
+          -i "{}" \;
+      '';
+    in
+    dontWaiveSamples;
+
   # Set some environment variables to help the poorly written
   # Makefiles find the libraries, headers, etc.
   preConfigure =
