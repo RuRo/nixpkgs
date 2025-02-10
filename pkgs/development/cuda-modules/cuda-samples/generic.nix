@@ -35,6 +35,10 @@ let
 
   inherit (backendStdenv.hostPlatform.parsed) cpu kernel;
   releasePath = "bin/${cpu.name}/${kernel.name}/release";
+
+  versionInRange =
+    v: lo: hi:
+    (versionAtLeast v lo) && (v == hi || versionOlder v hi);
 in
 backendStdenv.mkDerivation (finalAttrs: {
   strictDeps = true;
@@ -94,13 +98,22 @@ backendStdenv.mkDerivation (finalAttrs: {
       libnvjitlink
     ];
 
-  # See https://github.com/NVIDIA/cuda-samples/issues/75.
-  patches = optionals (finalAttrs.version == "11.3") [
-    (fetchpatch {
-      url = "https://github.com/NVIDIA/cuda-samples/commit/5c3ec60faeb7a3c4ad9372c99114d7bb922fda8d.patch";
-      hash = "sha256-0XxdmNK9MPpHwv8+qECJTvXGlFxc+fIbta4ynYprfpU=";
-    })
-  ];
+  patches =
+    optionals (finalAttrs.version == "11.3") [
+      # See https://github.com/NVIDIA/cuda-samples/issues/75.
+      (fetchpatch {
+        url = "https://github.com/NVIDIA/cuda-samples/commit/5c3ec60faeb7a3c4ad9372c99114d7bb922fda8d.patch";
+        hash = "sha256-0XxdmNK9MPpHwv8+qECJTvXGlFxc+fIbta4ynYprfpU=";
+      })
+    ]
+    ++ optionals (versionInRange finalAttrs.version "11.6" "12.0") [
+      # See https://github.com/NVIDIA/cuda-samples/pull/190.
+      # 'numeric_limits' is not a member of 'std'
+      (fetchpatch {
+        url = "https://github.com/NVIDIA/cuda-samples/compare/81cf058e306462d615019b6d6eb86977949b2834..cb52ce49a718c0d3e901191ed82451737592e49f.patch";
+        hash = "sha256-FD/5a9LVWN0sDfcLKLRynzbziouvfXJ0oLlSRMP5D6s=";
+      })
+    ];
 
   enableParallelBuilding = true;
 
