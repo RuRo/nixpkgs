@@ -11,12 +11,11 @@
   hash,
   lib,
   pkg-config,
-  stdenv,
 }:
 let
   inherit (lib) optionals versionAtLeast versionOlder;
 
-  inherit (stdenv.hostPlatform.parsed) cpu kernel;
+  inherit (backendStdenv.hostPlatform.parsed) cpu kernel;
   releasePath = "bin/${cpu.name}/${kernel.name}/release";
 in
 backendStdenv.mkDerivation (finalAttrs: {
