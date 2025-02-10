@@ -136,6 +136,7 @@ backendStdenv.mkDerivation (finalAttrs: {
 
   postPatch =
     let
+      brokenSamples = [ ];
       missingLibs = [ ];
 
       ifSampleExists = smp: body: ''
@@ -144,6 +145,12 @@ backendStdenv.mkDerivation (finalAttrs: {
           ${body}
         fi
       '';
+      removeSample =
+        smp:
+        ifSampleExists smp ''
+          echo "Removing broken sample $smp..."
+          rm -rf $smp
+        '';
       addLibToSample =
         smp:
         ifSampleExists smp ''
@@ -151,6 +158,7 @@ backendStdenv.mkDerivation (finalAttrs: {
           sed 's|^\(LIBRARIES +=\)|\1 -L\''${CUDA_PATH}/lib |' \
             -i $smp/Makefile
         '';
+      removeBrokenSamples = concatMapStrings removeSample brokenSamples;
       addMissingLibraries = concatMapStrings addLibToSample missingLibs;
 
       # By default, a lot of the Samples are just silently skipped when
@@ -162,7 +170,7 @@ backendStdenv.mkDerivation (finalAttrs: {
           -i "{}" \;
       '';
     in
-    addMissingLibraries + dontWaiveSamples;
+    removeBrokenSamples + addMissingLibraries + dontWaiveSamples;
 
   # Set some environment variables to help the poorly written
   # Makefiles find the libraries, headers, etc.
