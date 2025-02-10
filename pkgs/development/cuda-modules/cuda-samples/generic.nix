@@ -136,7 +136,77 @@ backendStdenv.mkDerivation (finalAttrs: {
 
   postPatch =
     let
-      brokenSamples = [ ];
+      brokenSamples =
+        # ======== Broken on unsupported platforms ========
+        ++ optionals (backendStdenv.hostPlatform.system == "x86_64-linux") [
+          # The following samples require DriveOS-specific libraries like
+          # NvSciBuf and NvSciSync that are not available on linux
+          "cudaNvSci" # libnvscibuf.so not found, please install libnvscibuf.so
+          "cudaNvSciNvMedia" # is not supported on Linux x86_64
+
+          # The following samples require the cuDLA library,
+          # which is only available on aarch64-jetson
+          "cuDLAErrorReporting" # is not supported on Linux x86_64
+          "cuDLAHybridMode" # is not supported on Linux x86_64
+          "cuDLALayerwiseStatsHybrid" # is not supported on Linux x86_64
+          "cuDLALayerwiseStatsStandalone" # is not supported on Linux x86_64
+          "cuDLAStandaloneMode" # is not supported on Linux x86_64
+
+          # The following samples require the D3D{9,10,11,12} libraries,
+          # which are only available on Windows
+          "SLID3D10Texture" # is not supported on Linux
+          "VFlockingD3D10" # is not supported on Linux
+          "fluidsD3D9" # is not supported on Linux
+          "simpleD3D10" # is not supported on Linux
+          "simpleD3D10RenderTarget" # is not supported on Linux
+          "simpleD3D10Texture" # is not supported on Linux
+          "simpleD3D11" # is not supported on Linux
+          "simpleD3D11Texture" # is not supported on Linux
+          "simpleD3D12" # is not supported on Linux
+          "simpleD3D9" # is not supported on Linux
+          "simpleD3D9Texture" # is not supported on Linux
+
+          # The following samples require the GLES/EGL libraries.
+          # For some reason cuda-samples claims that they are NOT available on
+          # x86_64-linux. Perhaps, these samples use some platform-specific
+          # subset of GLES/EGL ¯\_(ツ)_/¯.
+          "EGLSync_CUDAEvent_Interop" # is not supported on Linux x86_64
+          "fluidsGLES" # is not supported on Linux x86_64
+          "nbody_opengles" # is not supported on Linux x86_64
+          "nbody_screen" # is not supported on Linux x86_64
+          "simpleGLES" # is not supported on Linux x86_64
+          "simpleGLES_EGLOutput" # is not supported on Linux x86_64
+          "simpleGLES_screen" # is not supported on Linux x86_64
+        ]
+
+        # ======== Broken due to version incompatibilities ========
+        ++ optionals (versionOlder "2.33" backendStdenv.cc.libc.version) [
+          "cuHook" # GLIBC > 2.33 is not supported
+        ]
+        ++ optionals (versionInRange finalAttrs.version "12.0" "12.1") [
+          # The include/cuda/std/barrier header provided by cuda_cccl.dev seems
+          # to be incompatible with newer versions of GCC according to this post
+          # https://forums.developer.nvidia.com/t/cuda-12-1-error-when-building-cuda-samples/246465
+          # FIXME: This is probably happening, because CUDA 12.0 and 12.1
+          #        officially support GCC up to versions 12.1 and 12.2, but
+          #        pkgs/development/cuda-modules/nvcc-compatibilities.nix
+          #        only allows specifying the maximum *major* version of GCC.
+          #        As a consequence, CUDA 12.0 and 12.1 are currently using
+          #        GCC 12.4.0 which is technically out of spec.
+          "bf16TensorCoreGemm" # function "operator new" cannot be called with the given argument list
+          "dmmaTensorCoreGemm" # function "operator new" cannot be called with the given argument list
+          "dmmaTensorCoreGemm" # function "operator new" cannot be called with the given argument list
+          "globalToShmemAsyncCopy" # function "operator new" cannot be called with the given argument list
+          "simpleAWBarrier" # function "operator new" cannot be called with the given argument list
+          "tf32TensorCoreGemm" # function "operator new" cannot be called with the given argument list
+        ]
+        ++ optionals (versionOlder finalAttrs.version "11.8") [
+          # cuda_profiler_api is required for the following samples
+          # but cuda_profiler_api is only available since CUDA 11.8
+          "asyncAPI" # cuda_profiler_api.h: No such file or director
+          "matrixMul" # cuda_profiler_api.h: No such file or directory
+          "volumeRender" # cuda_profiler_api.h: No such file or directory
+        ];
       missingLibs = [
         # For some reason, these samples (and only these samples)
         # fail to pick up the default library path.
