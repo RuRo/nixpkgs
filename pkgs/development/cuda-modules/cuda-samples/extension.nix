@@ -21,6 +21,7 @@ let
     "12.1" = "sha256-xE0luOMq46zVsIEWwK4xjLs7NorcTIi9gbfZPVjIlqo=";
     "12.2" = "sha256-3+1gFQfrfv66dWeclA+905nsmOYstf36iPcBSAQToTo=";
     "12.3" = "sha256-fjVp0G6uRCWxsfe+gOwWTN+esZfk0O5uxS623u0REAk=";
+    "12.4" = "sha256-D+kP1OEJ4zR/9wKL+jjAv3TRv1IdX39mhZ1MvobX6F0=";
   };
 
   inherit (stdenv) hostPlatform;
