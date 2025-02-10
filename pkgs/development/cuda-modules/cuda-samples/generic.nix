@@ -14,7 +14,10 @@
   stdenv,
 }:
 let
-  inherit (lib) lists strings;
+  inherit (lib) optionals versionAtLeast versionOlder;
+
+  inherit (stdenv.hostPlatform.parsed) cpu kernel;
+  releasePath = "bin/${cpu.name}/${kernel.name}/release";
 in
 backendStdenv.mkDerivation (finalAttrs: {
   strictDeps = true;
@@ -37,7 +40,7 @@ backendStdenv.mkDerivation (finalAttrs: {
     # CMake has to run as a native, build-time dependency for libNVVM samples.
     # However, it's not the primary build tool -- that's still make.
     # As such, we disable CMake's build system.
-    ++ lists.optionals (strings.versionAtLeast finalAttrs.version "12.2") [ cmake ];
+    ++ optionals (versionAtLeast finalAttrs.version "12.2") [ cmake ];
 
   dontUseCmakeConfigure = true;
 
@@ -48,7 +51,7 @@ backendStdenv.mkDerivation (finalAttrs: {
   ];
 
   # See https://github.com/NVIDIA/cuda-samples/issues/75.
-  patches = lib.optionals (finalAttrs.version == "11.3") [
+  patches = optionals (finalAttrs.version == "11.3") [
     (fetchpatch {
       url = "https://github.com/NVIDIA/cuda-samples/commit/5c3ec60faeb7a3c4ad9372c99114d7bb922fda8d.patch";
       hash = "sha256-0XxdmNK9MPpHwv8+qECJTvXGlFxc+fIbta4ynYprfpU=";
@@ -64,7 +67,7 @@ backendStdenv.mkDerivation (finalAttrs: {
   installPhase = ''
     runHook preInstall
 
-    install -Dm755 -t $out/bin bin/${stdenv.hostPlatform.parsed.cpu.name}/${stdenv.hostPlatform.parsed.kernel.name}/release/*
+    install -Dm755 -t $out/bin ${releasePath}/*
 
     runHook postInstall
   '';
