@@ -29,6 +29,14 @@
   freeimage,
   glfw3,
   util-linux,
+
+  # Graphical dependencies
+  libGL,
+  libGLU,
+  libglut,
+  vulkan-headers,
+  vulkan-loader,
+  xorg,
 }:
 let
   inherit (lib) optionals versionAtLeast versionOlder;
@@ -70,6 +78,14 @@ backendStdenv.mkDerivation (finalAttrs: {
     [
       freeimage
       glfw3
+
+      # Graphical dependencies
+      libGL
+      libGLU
+      libglut
+      vulkan-headers
+      vulkan-loader
+      xorg.libX11
 
       # CUDA dependencies
       cuda_cudart
