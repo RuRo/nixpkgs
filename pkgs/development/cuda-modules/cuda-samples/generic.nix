@@ -25,19 +25,27 @@
 
   # Normal dependencies
   cmake,
-  freeimage,
-  glfw3,
   pkg-config,
   util-linux,
   which,
 
   # Graphical dependencies
+  glfw3,
   libGL,
   libGLU,
   libglut,
+  xorg,
+
+  # Optional dependencies
+  withFreeimage ? false, # default to false, because freeimage is insecure
+  freeimage,
+
+  withMPI ? true,
+  mpi,
+
+  withVulkan ? true,
   vulkan-headers,
   vulkan-loader,
-  xorg,
 }:
 let
   inherit (lib)
