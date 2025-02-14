@@ -94,14 +94,14 @@ backendStdenv.mkDerivation (finalAttrs: {
     [
       freeimage
       glfw3
-
-      # Graphical dependencies
       libGL
       libGLU
       libglut
+      xorg.libX11
+    ]
+    ++ optionals withVulkan [
       vulkan-headers
       vulkan-loader
-      xorg.libX11
     ]
     # CUDA dependencies
     ++ [
