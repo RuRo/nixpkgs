@@ -92,13 +92,13 @@ backendStdenv.mkDerivation (finalAttrs: {
 
   buildInputs =
     [
-      freeimage
       glfw3
       libGL
       libGLU
       libglut
       xorg.libX11
     ]
+    ++ optionals withFreeimage [ freeimage ]
     ++ optionals withVulkan [
       vulkan-headers
       vulkan-loader
