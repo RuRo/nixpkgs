@@ -20,7 +20,7 @@
   libcusolver,
   libcusparse,
   libnpp,
-  libnvjitlink,
+  libnvjitlink ? null,
   libnvjpeg,
 
   # Normal dependencies
@@ -82,14 +82,14 @@ backendStdenv.mkDerivation (finalAttrs: {
       libcusolver
       libcusparse
       libnpp
-      libnvjitlink
       libnvjpeg
       cuda_cudart.static
       libcublas.static
       libcufft.static
       libcurand.static
       libcusparse.static
-    ];
+    ]
+    ++ optionals (versionAtLeast finalAttrs.version "12.0") [ libnvjitlink ];
 
   # See https://github.com/NVIDIA/cuda-samples/issues/75.
   patches = optionals (finalAttrs.version == "11.3") [
