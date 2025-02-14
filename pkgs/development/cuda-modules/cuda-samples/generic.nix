@@ -13,7 +13,7 @@
   cuda_cudart,
   cuda_nvcc,
   cuda_nvrtc,
-  cuda_profiler_api,
+  cuda_profiler_api ? null,
   libcublas,
   libcufft,
   libcurand,
@@ -75,7 +75,6 @@ backendStdenv.mkDerivation (finalAttrs: {
       cuda_cudart
       cuda_nvcc
       cuda_nvrtc
-      cuda_profiler_api
       libcublas
       libcufft
       libcurand
@@ -89,6 +88,7 @@ backendStdenv.mkDerivation (finalAttrs: {
       libcurand.static
       libcusparse.static
     ]
+    ++ optionals (versionAtLeast finalAttrs.version "11.8") [ cuda_profiler_api ]
     ++ optionals (versionAtLeast finalAttrs.version "12.0") [ libnvjitlink ];
 
   # See https://github.com/NVIDIA/cuda-samples/issues/75.
