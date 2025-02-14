@@ -82,6 +82,7 @@ backendStdenv.mkDerivation (finalAttrs: {
       util-linux
       which
     ]
+    ++ optionals withMPI [ mpi.dev ]
     # CMake has to run as a native, build-time dependency for libNVVM samples.
     # However, it's not the primary build tool -- that's still make.
     # As such, we disable CMake's build system.
