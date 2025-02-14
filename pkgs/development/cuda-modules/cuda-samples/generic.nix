@@ -128,6 +128,7 @@ backendStdenv.mkDerivation (finalAttrs: {
   patches =
     optionals (finalAttrs.version == "11.3") [
       # See https://github.com/NVIDIA/cuda-samples/issues/75.
+      # No rule to make target '../../common/src/helper_multiprocess.cpp'
       (fetchpatch {
         url = "https://github.com/NVIDIA/cuda-samples/commit/5c3ec60faeb7a3c4ad9372c99114d7bb922fda8d.patch";
         hash = "sha256-0XxdmNK9MPpHwv8+qECJTvXGlFxc+fIbta4ynYprfpU=";
