@@ -102,8 +102,9 @@ backendStdenv.mkDerivation (finalAttrs: {
       vulkan-headers
       vulkan-loader
       xorg.libX11
-
-      # CUDA dependencies
+    ]
+    # CUDA dependencies
+    ++ [
       cuda_cccl
       cuda_cudart
       cuda_nvcc
