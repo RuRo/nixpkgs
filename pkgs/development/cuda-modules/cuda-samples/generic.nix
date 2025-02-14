@@ -137,6 +137,26 @@ backendStdenv.mkDerivation (finalAttrs: {
   postPatch =
     let
       brokenSamples =
+        # ======== Broken without optional dependencies ========
+        optionals (!withFreeimage) [
+          # The following samples require FreeImage.
+          "FilterBorderControlNPP" # FreeImage is not set up correctly.
+          "boxFilterNPP" # FreeImage is not set up correctly.
+          "cannyEdgeDetectorNPP" # FreeImage is not set up correctly.
+          "freeImageInteropNPP" # FreeImage is not set up correctly.
+          "histEqualizationNPP" # FreeImage is not set up correctly.
+        ]
+        ++ optionals (!withMPI) [
+          # The following samples require MPI.
+          "simpleMPI" # No MPI compiler found.
+        ]
+        ++ optionals (!withVulkan) [
+          # The following samples require Vulkan.
+          "simpleVulkan" # libvulkan.so not found, please install Vulkan SDK
+          "simpleVulkanMMAP" # libvulkan.so not found, please install Vulkan SDK
+          "vulkanImageCUDA" # libvulkan.so not found, please install Vulkan SDK
+        ]
+
         # ======== Broken on unsupported platforms ========
         ++ optionals (backendStdenv.hostPlatform.system == "x86_64-linux") [
           # The following samples require DriveOS-specific libraries like
