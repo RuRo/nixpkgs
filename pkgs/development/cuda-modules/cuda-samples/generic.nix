@@ -29,6 +29,7 @@
   glfw3,
   pkg-config,
   util-linux,
+  which,
 }:
 let
   inherit (lib)
@@ -63,6 +64,7 @@ backendStdenv.mkDerivation (finalAttrs: {
       autoAddDriverRunpath
       pkg-config
       util-linux
+      which
     ]
     # CMake has to run as a native, build-time dependency for libNVVM samples.
     # However, it's not the primary build tool -- that's still make.
