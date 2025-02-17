@@ -301,6 +301,7 @@ backendStdenv.mkDerivation (finalAttrs: {
       export CUDALIB=${buildInputsRoot}/lib/stubs/libcuda.so
       export DFLT_PATH=${buildInputsRoot}/lib
       export HEADER_SEARCH_PATH=${buildInputsRoot}/include
+      export EXTRA_NVCCFLAGS="-U__SIZEOF_INT128__"
     '';
 
   # Any files that were in the release directory before the build started
